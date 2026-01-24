@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haushaltskosten Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .summary-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .summary-card .amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .form-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .entries-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .entries-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+
+        .person-group {
+            margin-bottom: 30px;
+        }
+
+        .person-header {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .person-name {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .person-total {
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .entries-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .entries-table th,
+        .entries-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e1e1e1;
+        }
+
+        .entries-table th {
+            background-color: #f8f9ff;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .entries-table tr:hover {
+            background-color: #f8f9ff;
+        }
+
+        .status-paid {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .status-unpaid {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .action-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .action-btn.paid {
+            background: #6c757d;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 5px;
+        }
+
+        .no-entries {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .entries-table {
+                font-size: 0.9rem;
+            }
+
+            .entries-table th,
+            .entries-table td {
+                padding: 8px 5px;
+            }
+
+            .person-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Haushaltskosten Tracker</h1>
+            <p>Einfache Kostenverfolgung für zwei Personen</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Person 1 - Offen</h3>
+                <div class="amount" id="person1-total">€0.00</div>
+            </div>
+            <div class="summary-card">
+                <h3>Person 2 - Offen</h3>
+                <div class="amount" id="person2-total">€0.00</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>📝 Neue Ausgabe hinzufügen</h2>
+            <form id="expense-form">
+                <div class="form-group">
+                    <label for="person">Person</label>
+                    <select id="person" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="Person 1">Person 1</option>
+                        <option value="Person 2">Person 2</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Kategorie</label>
+                    <select id="category" required>
+                        <option value="">Bitte wählen...</option>
+                        <option value="Einkauf Haushalt">Einkauf Haushalt</option>
+                        <option value="Online Takeout oder Takeaway">Online Takeout oder Takeaway</option>
+                        <option value="Auswärts Essen oder Drinks">Auswärts Essen oder Drinks</option>
+                        <option value="Sonstiges">Sonstiges</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="amount">Betrag (€)</label>
+                    <input type="number" id="amount" step="0.01" min="0" required placeholder="0.00">
+                </div>
+
+                <div class="form-group">
+                    <label for="remarks">Bemerkungen</label>
+                    <textarea id="remarks" placeholder="Optionale Bemerkungen..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="date">Datum</label>
+                    <input type="date" id="date" required>
+                </div>
+
+                <button type="submit" class="btn">💾 Ausgabe hinzufügen</button>
+            </form>
+        </div>
+
+        <div class="entries-section">
+            <h2>📊 Ausgaben Übersicht</h2>
+            <div id="entries-container">
+                <div class="no-entries">Noch keine Ausgaben erfasst.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class HouseholdTracker {
+            constructor() {
+                this.expenses = this.loadExpenses();
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setTodayDate();
+                this.renderExpenses();
+                this.updateSummary();
+            }
+
+            setupEventListeners() {
+                document.getElementById('expense-form').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.addExpense();
+                });
+            }
+
+            setTodayDate() {
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('date').value = today;
+            }
+
+            addExpense() {
+                const form = document.getElementById('expense-form');
+                const formData = new FormData(form);
+                
+                const expense = {
+                    id: Date.now(),
+                    person: document.getElementById('person').value,
+                    category: document.getElementById('category').value,
+                    amount: parseFloat(document.getElementById('amount').value),
+                    remarks: document.getElementById('remarks').value,
+                    date: document.getElementById('date').value,
+                    status: 'unpaid',
+                    timestamp: new Date().toISOString()
+                };
+
+                this.expenses.push(expense);
+                this.saveExpenses();
+                this.renderExpenses();
+                this.updateSummary();
+                form.reset();
+                this.setTodayDate();
+
+                // Erfolgs-Feedback
+                this.showNotification('Ausgabe erfolgreich hinzugefügt!');
+            }
+
+            togglePaymentStatus(id) {
+                const expense = this.expenses.find(e => e.id === id);
+                if (expense) {
+                    expense.status = expense.status === 'paid' ? 'unpaid' : 'paid';
+                    this.saveExpenses();
+                    this.renderExpenses();
+                    this.updateSummary();
+                }
+            }
+
+            deleteExpense(id) {
+                if (confirm('Möchten Sie diese Ausgabe wirklich löschen?')) {
+                    this.expenses = this.expenses.filter(e => e.id !== id);
+                    this.saveExpenses();
+                    this.renderExpenses();
+                    this.updateSummary();
+                    this.showNotification('Ausgabe gelöscht!');
+                }
+            }
+
+            renderExpenses() {
+                const container = document.getElementById('entries-container');
+                
+                if (this.expenses.length === 0) {
+                    container.innerHTML = '<div class="no-entries">Noch keine Ausgaben erfasst.</div>';
+                    return;
+                }
+
+                // Gruppiere nach Personen
+                const groupedExpenses = this.expenses.reduce((groups, expense) => {
+                    if (!groups[expense.person]) {
+                        groups[expense.person] = [];
+                    }
+                    groups[expense.person].push(expense);
+                    return groups;
+                }, {});
+
+                let html = '';
+                
+                Object.keys(groupedExpenses).forEach(person => {
+                    const personExpenses = groupedExpenses[person];
+                    const personTotal = personExpenses
+                        .filter(e => e.status === 'unpaid')
+                        .reduce((sum, e) => sum + e.amount, 0);
+
+                    html += `
+                        <div class="person-group">
+                            <div class="person-header">
+                                <div class="person-name">${person}</div>
+                                <div class="person-total">Offen: €${personTotal.toFixed(2)}</div>
+                            </div>
+                            <table class="entries-table">
+                                <thead>
+                                    <tr>
+                                        <th>Datum</th>
+                                        <th>Kategorie</th>
+                                        <th>Betrag</th>
+                                        <th>Status</th>
+                                        <th>Aktionen</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+
+                    // Sortiere nach Datum (neueste zuerst)
+                    personExpenses
+                        .sort((a, b) => new Date(b.date) - new Date(a.date))
+                        .forEach(expense => {
+                            const statusClass = expense.status === 'paid' ? 'status-paid' : 'status-unpaid';
+                            const statusText = expense.status === 'paid' ? 'Bezahlt' : 'Offen';
+                            const actionBtnClass = expense.status === 'paid' ? 'paid' : '';
+                            const actionBtnText = expense.status === 'paid' ? 'Wieder öffnen' : 'Als bezahlt markieren';
+
+                            html += `
+                                <tr>
+                                    <td>${this.formatDate(expense.date)}</td>
+                                    <td>
+                                        ${expense.category}
+                                        ${expense.remarks ? `<br><small style="color: #666;">${expense.remarks}</small>` : ''}
+                                    </td>
+                                    <td>€${expense.amount.toFixed(2)}</td>
+                                    <td><span class="${statusClass}">${statusText}</span></td>
+                                    <td>
+                                        <button class="action-btn ${actionBtnClass}" onclick="tracker.togglePaymentStatus(${expense.id})">
+                                            ${actionBtnText}
+                                        </button>
+                                        <button class="delete-btn" onclick="tracker.deleteExpense(${expense.id})">
+                                            Löschen
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+
+                    html += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                });
+
+                container.innerHTML = html;
+            }
+
+            updateSummary() {
+                const person1Total = this.expenses
+                    .filter(e => e.person === 'Person 1' && e.status === 'unpaid')
+                    .reduce((sum, e) => sum + e.amount, 0);
+
+                const person2Total = this.expenses
+                    .filter(e => e.person === 'Person 2' && e.status === 'unpaid')
+                    .reduce((sum, e) => sum + e.amount, 0);
+
+                document.getElementById('person1-total').textContent = `€${person1Total.toFixed(2)}`;
+                document.getElementById('person2-total').textContent = `€${person2Total.toFixed(2)}`;
+            }
+
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('de-DE');
+            }
+
+            showNotification(message) {
+                // Einfache Benachrichtigung
+                const notification = document.createElement('div');
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #28a745;
+                    color: white;
+                    padding: 0;
+                    border-radius: 8px;
+                    z-index: 1000;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                `;
+                notification.textContent = message;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }
+
+            saveExpenses() {
+                localStorage.setItem('household-expenses', JSON.stringify(this.expenses));
+            }
+
+            loadExpenses() {
+                const saved = localStorage.getItem('household-expenses');
+                return saved ? JSON.parse(saved) : [];
+            }
+        }
+
+        // App initialisieren
+        const tracker = new HouseholdTracker();
+    </script>
+</body>
+</html>
