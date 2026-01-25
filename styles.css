@@ -138,12 +138,15 @@ body {
 }
 
 .settings-content {
-    padding: 0 25px 25px 25px;
-    display: none;
+    padding: 0 25px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
 }
 
 .settings-content.expanded {
-    display: block;
+    max-height: 300px;
+    padding: 0 25px 25px 25px;
 }
 
 .name-inputs {
@@ -390,6 +393,7 @@ body {
     font-size: 0.85rem;
     font-weight: 500;
     transition: all 0.3s ease;
+    margin-bottom: 4px;
 }
 
 .action-btn:hover {
@@ -414,13 +418,18 @@ body {
     cursor: pointer;
     font-size: 0.85rem;
     font-weight: 500;
-    margin-left: 8px;
     transition: all 0.3s ease;
 }
 
 .delete-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.actions-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .no-entries {
@@ -535,7 +544,7 @@ body {
 
     .entries-table th:last-child,
     .entries-table td:last-child {
-        min-width: 140px;
+        min-width: 100px;
         position: sticky;
         right: 0;
         background: rgba(15, 23, 42, 0.9);
@@ -548,10 +557,12 @@ body {
 
     .action-btn,
     .delete-btn {
-        padding: 6px 10px;
+        padding: 8px 12px;
         font-size: 0.75rem;
-        margin: 2px;
-        display: inline-block;
+        margin: 2px 0;
+        display: block;
+        width: 100%;
+        text-align: center;
     }
 
     .person-header {

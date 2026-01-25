@@ -368,12 +368,14 @@ class HouseholdTracker {
                         <td>CHF ${expense.amount.toFixed(2)}</td>
                         <td><span class="${statusClass}">${statusText}</span></td>
                         <td>
-                            <button class="action-btn ${actionBtnClass}" onclick="tracker.togglePaymentStatus('${expense.id}')">
-                                ${actionBtnText}
-                            </button>
-                            <button class="delete-btn" onclick="tracker.deleteExpense('${expense.id}')">
-                                Löschen
-                            </button>
+                            <div class="actions-container">
+                                <button class="action-btn ${actionBtnClass}" onclick="tracker.togglePaymentStatus('${expense.id}')">
+                                    ${actionBtnText}
+                                </button>
+                                <button class="delete-btn" onclick="tracker.deleteExpense('${expense.id}')">
+                                    Löschen
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
