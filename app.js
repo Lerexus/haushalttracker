@@ -23,11 +23,20 @@ const db = getFirestore(app);
 class HouseholdTracker {
     constructor() {
         this.expenses = [];
+        this.filteredExpenses = [];
+        this.displayedExpenses = [];
         this.currentUser = null;
         this.unsubscribe = null;
         this.personNames = {
             'Person 1': 'Person 1',
             'Person 2': 'Person 2'
+        };
+        // Filter-Einstellungen
+        this.currentFilter = {
+            status: 'unpaid', // Standard: nur offene Einträge
+            timeRange: 'all',  // Standard: alle Zeit
+            itemsPerPage: 20,
+            currentPage: 1
         };
         this.init();
     }
@@ -71,8 +80,12 @@ class HouseholdTracker {
         document.getElementById('person1-name').addEventListener('blur', () => this.updatePersonName('Person 1'));
         document.getElementById('person2-name').addEventListener('blur', () => this.updatePersonName('Person 2'));
 
-        // Settings toggle event
-        document.getElementById('settings-header').addEventListener('click', () => this.toggleSettings());
+        // Filter events
+        document.getElementById('filter-unpaid').addEventListener('click', () => this.setStatusFilter('unpaid'));
+        document.getElementById('filter-paid').addEventListener('click', () => this.setStatusFilter('paid'));
+        document.getElementById('filter-all').addEventListener('click', () => this.setStatusFilter('all'));
+        document.getElementById('month-filter').addEventListener('change', (e) => this.setTimeFilter(e.target.value));
+        document.getElementById('load-more-btn').addEventListener('click', () => this.loadMoreEntries());
 
         // Enter key for auth
         document.getElementById('email').addEventListener('keypress', (e) => {
@@ -81,6 +94,193 @@ class HouseholdTracker {
         document.getElementById('password').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.login();
         });
+    }
+
+    // Filter-Funktionen
+    setStatusFilter(status) {
+        this.currentFilter.status = status;
+        this.currentFilter.currentPage = 1; // Reset pagination
+        this.updateFilterButtons();
+        this.applyFilters();
+    }
+
+    setTimeFilter(timeRange) {
+        this.currentFilter.timeRange = timeRange;
+        this.currentFilter.currentPage = 1; // Reset pagination
+        this.applyFilters();
+    }
+
+    updateFilterButtons() {
+        // Remove active class from all buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to current filter
+        const activeButton = document.getElementById(`filter-${this.currentFilter.status}`);
+        if (activeButton) {
+            activeButton.classList.add('active');
+        }
+    }
+
+    applyFilters() {
+        // Status-Filter anwenden
+        let filtered = this.expenses;
+        
+        if (this.currentFilter.status === 'paid') {
+            filtered = filtered.filter(expense => expense.status === 'paid');
+        } else if (this.currentFilter.status === 'unpaid') {
+            filtered = filtered.filter(expense => expense.status === 'unpaid');
+        }
+        // 'all' zeigt alle Einträge
+
+        // Zeit-Filter anwenden
+        if (this.currentFilter.timeRange !== 'all') {
+            const now = new Date();
+            let startDate;
+
+            switch (this.currentFilter.timeRange) {
+                case 'current':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'last3':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    break;
+            }
+
+            if (startDate) {
+                filtered = filtered.filter(expense => new Date(expense.date) >= startDate);
+            }
+        }
+
+        this.filteredExpenses = filtered;
+        this.updateFilterCounts();
+        this.renderFilteredExpenses();
+    }
+
+    updateFilterCounts() {
+        const unpaidCount = this.expenses.filter(e => e.status === 'unpaid').length;
+        const paidCount = this.expenses.filter(e => e.status === 'paid').length;
+        const totalCount = this.expenses.length;
+
+        document.getElementById('unpaid-count').textContent = unpaidCount;
+        document.getElementById('paid-count').textContent = paidCount;
+        document.getElementById('total-count').textContent = totalCount;
+    }
+
+    loadMoreEntries() {
+        this.currentFilter.currentPage++;
+        this.renderFilteredExpenses();
+    }
+
+    renderFilteredExpenses() {
+        const container = document.getElementById('entries-container');
+        
+        if (this.filteredExpenses.length === 0) {
+            container.innerHTML = '<div class="no-entries">Keine Einträge für die gewählten Filter gefunden.</div>';
+            this.updateLoadMoreSection(0, 0);
+            return;
+        }
+
+        // Pagination anwenden
+        const startIndex = 0;
+        const endIndex = this.currentFilter.currentPage * this.currentFilter.itemsPerPage;
+        this.displayedExpenses = this.filteredExpenses.slice(startIndex, endIndex);
+
+        // Gruppiere nach Personen
+        const groupedExpenses = this.displayedExpenses.reduce((groups, expense) => {
+            if (!groups[expense.person]) {
+                groups[expense.person] = [];
+            }
+            groups[expense.person].push(expense);
+            return groups;
+        }, {});
+
+        let html = '';
+        
+        Object.keys(groupedExpenses).forEach(person => {
+            const personExpenses = groupedExpenses[person];
+            const personTotal = personExpenses
+                .filter(e => e.status === 'unpaid')
+                .reduce((sum, e) => sum + e.amount, 0);
+
+            const displayName = this.personNames[person] || person;
+
+            html += `
+                <div class="person-group">
+                    <div class="person-header">
+                        <div class="person-name">${displayName}</div>
+                        <div class="person-total">Offen: CHF ${personTotal.toFixed(2)}</div>
+                    </div>
+                    <table class="entries-table">
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Kategorie</th>
+                                <th>Betrag</th>
+                                <th>Status</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            personExpenses.forEach(expense => {
+                const statusClass = expense.status === 'paid' ? 'status-paid' : 'status-unpaid';
+                const statusText = expense.status === 'paid' ? 'Bezahlt' : 'Offen';
+                const actionBtnClass = expense.status === 'paid' ? 'paid' : '';
+                const actionBtnText = expense.status === 'paid' ? 'Wieder öffnen' : 'Als bezahlt markieren';
+
+                html += `
+                    <tr>
+                        <td>${this.formatDate(expense.date)}</td>
+                        <td>
+                            ${expense.category}
+                            ${expense.remarks ? `<br><small style="color: #94a3b8;">${expense.remarks}</small>` : ''}
+                        </td>
+                        <td>CHF ${expense.amount.toFixed(2)}</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>
+                            <div class="actions-container">
+                                <button class="action-btn ${actionBtnClass}" onclick="tracker.togglePaymentStatus('${expense.id}')">
+                                    ${actionBtnText}
+                                </button>
+                                <button class="delete-btn" onclick="tracker.deleteExpense('${expense.id}')">
+                                    Löschen
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+        this.updateLoadMoreSection(this.displayedExpenses.length, this.filteredExpenses.length);
+    }
+
+    updateLoadMoreSection(shown, total) {
+        const loadMoreSection = document.getElementById('load-more-section');
+        const loadMoreBtn = document.getElementById('load-more-btn');
+        const shownCount = document.getElementById('shown-count');
+        const totalFiltered = document.getElementById('total-filtered');
+
+        shownCount.textContent = shown;
+        totalFiltered.textContent = total;
+
+        if (shown < total) {
+            loadMoreSection.style.display = 'block';
+            loadMoreBtn.disabled = false;
+        } else {
+            loadMoreSection.style.display = 'none';
+        }
     }
 
     showLoading() {
@@ -220,7 +420,7 @@ class HouseholdTracker {
         `;
 
         // Re-render expenses to show updated names
-        this.renderExpenses();
+        this.applyFilters();
     }
 
     setupRealtimeListener() {
@@ -243,7 +443,7 @@ class HouseholdTracker {
             // Sortierung im JavaScript statt in Firestore
             this.expenses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             
-            this.renderExpenses();
+            this.applyFilters();
             this.updateSummary();
         });
     }
@@ -309,89 +509,9 @@ class HouseholdTracker {
         }
     }
 
+    // Legacy-Funktion für Kompatibilität (wird nicht mehr verwendet)
     renderExpenses() {
-        const container = document.getElementById('entries-container');
-        
-        if (this.expenses.length === 0) {
-            container.innerHTML = '<div class="no-entries">Noch keine Ausgaben erfasst.</div>';
-            return;
-        }
-
-        // Gruppiere nach Personen
-        const groupedExpenses = this.expenses.reduce((groups, expense) => {
-            if (!groups[expense.person]) {
-                groups[expense.person] = [];
-            }
-            groups[expense.person].push(expense);
-            return groups;
-        }, {});
-
-        let html = '';
-        
-        Object.keys(groupedExpenses).forEach(person => {
-            const personExpenses = groupedExpenses[person];
-            const personTotal = personExpenses
-                .filter(e => e.status === 'unpaid')
-                .reduce((sum, e) => sum + e.amount, 0);
-
-            const displayName = this.personNames[person] || person;
-
-            html += `
-                <div class="person-group">
-                    <div class="person-header">
-                        <div class="person-name">${displayName}</div>
-                        <div class="person-total">Offen: CHF ${personTotal.toFixed(2)}</div>
-                    </div>
-                    <table class="entries-table">
-                        <thead>
-                            <tr>
-                                <th>Datum</th>
-                                <th>Kategorie</th>
-                                <th>Betrag</th>
-                                <th>Status</th>
-                                <th>Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
-            personExpenses.forEach(expense => {
-                const statusClass = expense.status === 'paid' ? 'status-paid' : 'status-unpaid';
-                const statusText = expense.status === 'paid' ? 'Bezahlt' : 'Offen';
-                const actionBtnClass = expense.status === 'paid' ? 'paid' : '';
-                const actionBtnText = expense.status === 'paid' ? 'Wieder öffnen' : 'Als bezahlt markieren';
-
-                html += `
-                    <tr>
-                        <td>${this.formatDate(expense.date)}</td>
-                        <td>
-                            ${expense.category}
-                            ${expense.remarks ? `<br><small style="color: #94a3b8;">${expense.remarks}</small>` : ''}
-                        </td>
-                        <td>CHF ${expense.amount.toFixed(2)}</td>
-                        <td><span class="${statusClass}">${statusText}</span></td>
-                        <td>
-                            <div class="actions-container">
-                                <button class="action-btn ${actionBtnClass}" onclick="tracker.togglePaymentStatus('${expense.id}')">
-                                    ${actionBtnText}
-                                </button>
-                                <button class="delete-btn" onclick="tracker.deleteExpense('${expense.id}')">
-                                    Löschen
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            html += `
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        });
-
-        container.innerHTML = html;
+        this.applyFilters();
     }
 
     updateSummary() {
@@ -472,6 +592,13 @@ class HouseholdTracker {
         }
     }
 }
+
+// Globale Funktion für Settings Toggle (für onclick im HTML)
+window.toggleSettings = function() {
+    if (window.tracker) {
+        window.tracker.toggleSettings();
+    }
+};
 
 // App initialisieren
 window.tracker = new HouseholdTracker();
