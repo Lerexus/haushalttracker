@@ -65,7 +65,7 @@ haushaltskosten-tracker/
  
 ## 🚀 Live Demo
  
-**URL**: `https://ihr-username.github.io/haushaltskosten-tracker`
+**URL**: `https://lerexus.github.io/haushalttracker/`
  
 ## 📱 Installation als Web-App
  
