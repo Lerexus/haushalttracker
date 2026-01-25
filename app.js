@@ -1,7 +1,7 @@
 // Firebase configuration - DIESE WERTE MÜSSEN SIE NACH DER FIREBASE-EINRICHTUNG ERSETZEN
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-import { getFirestore, collection, addDoc, query, onSnapshot, doc, updateDoc, deleteDoc, orderBy, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+import { getFirestore, collection, addDoc, query, onSnapshot, doc, updateDoc, deleteDoc, orderBy, setDoc, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
 // WICHTIG: Diese Konfiguration müssen Sie nach der Firebase-Einrichtung ersetzen
 const firebaseConfig = {
@@ -225,6 +225,7 @@ class HouseholdTracker {
 
         const q = query(
             collection(db, 'expenses'),
+            where('userId', '==', this.currentUser.uid),
             orderBy('timestamp', 'desc')
         );
 
