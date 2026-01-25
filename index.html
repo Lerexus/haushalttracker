@@ -9,8 +9,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>💰 Haushaltskosten Tracker</h1>
-            <p>Elegante Cloud-Synchronisation für zwei Personen</p>
+            <h1>Haushaltskosten Tracker</h1>
         </div>
 
         <!-- Loading Screen -->
@@ -49,15 +48,20 @@
 
             <!-- Settings Section -->
             <div class="settings-section">
-                <h2>⚙️ Personennamen anpassen</h2>
-                <div class="name-inputs">
-                    <div class="form-group">
-                        <label for="person1-name">Name für Person 1</label>
-                        <input type="text" id="person1-name" placeholder="z.B. Max" maxlength="20">
-                    </div>
-                    <div class="form-group">
-                        <label for="person2-name">Name für Person 2</label>
-                        <input type="text" id="person2-name" placeholder="z.B. Anna" maxlength="20">
+                <div class="settings-header" onclick="toggleSettings()">
+                    <h2>Einstellungen</h2>
+                    <span class="settings-toggle" id="settings-toggle">▼</span>
+                </div>
+                <div class="settings-content" id="settings-content">
+                    <div class="name-inputs">
+                        <div class="form-group">
+                            <label for="person1-name">Name für Person 1</label>
+                            <input type="text" id="person1-name" placeholder="z.B. Max" maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="person2-name">Name für Person 2</label>
+                            <input type="text" id="person2-name" placeholder="z.B. Anna" maxlength="20">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,7 +78,7 @@
             </div>
 
             <div class="form-section">
-                <h2>📝 Neue Ausgabe hinzufügen</h2>
+                <h2>Neue Ausgabe hinzufügen</h2>
                 <form id="expense-form">
                     <div class="form-group">
                         <label for="person">Person</label>
@@ -116,7 +120,7 @@
             </div>
 
             <div class="entries-section">
-                <h2>📊 Ausgaben Übersicht</h2>
+                <h2>Ausgaben Übersicht</h2>
                 <div id="entries-container">
                     <div class="no-entries">Noch keine Ausgaben erfasst.</div>
                 </div>
