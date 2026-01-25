@@ -488,14 +488,16 @@
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
         import { getFirestore, collection, addDoc, query, onSnapshot, doc, updateDoc, deleteDoc, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // WICHTIG: Diese Konfiguration müssen Sie nach der Firebase-Einrichtung ersetzen
+        // Angepasste Werte
         const firebaseConfig = {
             apiKey: "AIzaSyATV_F1dO41SKGC9g14l8RgXxYHGEKoOA4",
             authDomain: "haushalttracker-db.firebaseapp.com",
+            databaseURL: "https://haushalttracker-db-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "haushalttracker-db",
             storageBucket: "haushalttracker-db.firebasestorage.app",
             messagingSenderId: "1064744774696",
-            appId: "1:1064744774696:web:a421cfb5b35125cf63591d"
+            appId: "1:1064744774696:web:4504f8422fe731bb63591d",
+            measurementId: "G-VT32X6Y5LE"
         };
 
         // Firebase initialisieren
@@ -866,6 +868,7 @@
     </script>
 </body>
 </html>
+
 
 
 
