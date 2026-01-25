@@ -19,10 +19,15 @@ body {
     padding: 20px;
 }
 
-/* Header */
+/* Header - WIEDERHERGESTELLT mit Kachel-Hintergrund */
 .header {
     text-align: center;
     margin-bottom: 30px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 .header h1 {
@@ -105,6 +110,7 @@ body {
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
+    justify-content: center; /* WIEDERHERGESTELLT: Zentrierte Buttons */
 }
 
 .btn {
@@ -436,7 +442,7 @@ body {
 }
 
 .person-header.collapsed::after {
-    content: "►";
+    content: "▶";
     font-size: 1.2rem;
     color: #94a3b8;
     transition: transform 0.3s ease;
@@ -471,11 +477,19 @@ body {
     max-height: 0;
 }
 
+/* Table Container - WIEDERHERGESTELLT für horizontales Scrollen */
+.table-container {
+    overflow-x: auto;
+    margin: 0;
+    border-radius: 8px;
+}
+
 /* Tables */
 .entries-table {
     width: 100%;
     border-collapse: collapse;
     background: rgba(15, 23, 42, 0.4);
+    min-width: 600px; /* Mindestbreite für Scrollen */
 }
 
 .entries-table th {
@@ -667,6 +681,40 @@ body {
     }
 }
 
+/* Sticky Actions Column */
+.entries-table th:last-child,
+.entries-table td:last-child {
+    position: sticky;
+    right: 0;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(10px);
+    border-left: 1px solid rgba(148, 163, 184, 0.1);
+    z-index: 10;
+}
+
+.entries-table th:last-child {
+    background: rgba(59, 130, 246, 0.15);
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Highlight Animation für Navigation */
+.person-group.highlight {
+    animation: highlightPulse 2s ease-in-out;
+}
+
+@keyframes highlightPulse {
+    0%, 100% {
+        box-shadow: 0 5px 20px rgba(59, 130, 246, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+    }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .container {
@@ -828,39 +876,5 @@ body {
     .actions-container {
         gap: 4px;
         min-width: 60px;
-    }
-}
-
-/* Sticky Actions Column */
-.entries-table th:last-child,
-.entries-table td:last-child {
-    position: sticky;
-    right: 0;
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(10px);
-    border-left: 1px solid rgba(148, 163, 184, 0.1);
-    z-index: 10;
-}
-
-.entries-table th:last-child {
-    background: rgba(59, 130, 246, 0.15);
-}
-
-/* Smooth Scrolling */
-html {
-    scroll-behavior: smooth;
-}
-
-/* Highlight Animation für Navigation */
-.person-group.highlight {
-    animation: highlightPulse 2s ease-in-out;
-}
-
-@keyframes highlightPulse {
-    0%, 100% {
-        box-shadow: 0 5px 20px rgba(59, 130, 246, 0.1);
-    }
-    50% {
-        box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
     }
 }

@@ -510,17 +510,18 @@ class HouseholdTracker {
                         <div class="person-total">Offen: CHF ${personTotal.toFixed(2)}</div>
                     </div>
                     <div class="person-content ${isCollapsed ? 'collapsed' : ''}">
-                        <table class="entries-table">
-                            <thead>
-                                <tr>
-                                    <th>Datum</th>
-                                    <th>Kategorie</th>
-                                    <th>Betrag</th>
-                                    <th>Status</th>
-                                    <th>Aktionen</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                        <div class="table-container">
+                            <table class="entries-table">
+                                <thead>
+                                    <tr>
+                                        <th>Datum</th>
+                                        <th>Kategorie</th>
+                                        <th>Betrag</th>
+                                        <th>Status</th>
+                                        <th>Aktionen</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
             `;
 
             personExpenses.forEach(expense => {
@@ -556,8 +557,9 @@ class HouseholdTracker {
             });
 
             html += `
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             `;
