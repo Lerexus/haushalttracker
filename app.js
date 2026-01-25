@@ -458,9 +458,7 @@ class HouseholdTracker {
                 return error.message;
         }
     }
-}
 
-// Settings Toggle Funktion (als Klassenmethode)
     toggleSettings() {
         const content = document.getElementById('settings-content');
         const toggle = document.getElementById('settings-toggle');
@@ -473,6 +471,7 @@ class HouseholdTracker {
             toggle.classList.add('expanded');
         }
     }
+}
 
 // App initialisieren
 window.tracker = new HouseholdTracker();
