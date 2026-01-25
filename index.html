@@ -9,7 +9,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>💰 Haushaltskosten Tracker</h1>
+            <h1>Haushaltskosten Tracker</h1>
         </div>
 
         <!-- Loading Screen -->
@@ -120,9 +120,40 @@
             </div>
 
             <div class="entries-section">
-                <h2>📊 Ausgaben Übersicht</h2>
+                <h2>Ausgaben Übersicht</h2>
+                
+                <!-- Filter-Sektion -->
+                <div class="filter-section">
+                    <div class="status-filters">
+                        <button class="filter-btn active" data-status="unpaid" id="filter-unpaid">
+                            🔴 Offen (<span id="unpaid-count">0</span>)
+                        </button>
+                        <button class="filter-btn" data-status="paid" id="filter-paid">
+                            ✅ Bezahlt (<span id="paid-count">0</span>)
+                        </button>
+                        <button class="filter-btn" data-status="all" id="filter-all">
+                            📋 Alle (<span id="total-count">0</span>)
+                        </button>
+                    </div>
+                    
+                    <div class="time-filters">
+                        <select id="month-filter">
+                            <option value="all">Alle Zeit</option>
+                            <option value="current">Diesen Monat</option>
+                            <option value="last3">Letzte 3 Monate</option>
+                            <option value="year">Dieses Jahr</option>
+                        </select>
+                    </div>
+                </div>
+                
                 <div id="entries-container">
                     <div class="no-entries">Noch keine Ausgaben erfasst.</div>
+                </div>
+                
+                <!-- Laden-Button für Pagination -->
+                <div class="load-more" id="load-more-section" style="display: none;">
+                    <button id="load-more-btn" class="load-more-btn">📄 Weitere 20 Einträge laden</button>
+                    <div class="load-info">Zeige <span id="shown-count">0</span> von <span id="total-filtered">0</span> Einträgen</div>
                 </div>
             </div>
         </div>
