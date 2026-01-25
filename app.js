@@ -23,6 +23,7 @@ const db = getFirestore(app);
 class HouseholdTracker {
     constructor() {
         this.expenses = [];
+        this.filteredExpenses = [];
         this.currentUser = null;
         this.unsubscribe = null;
         this.personNames = {
@@ -34,6 +35,12 @@ class HouseholdTracker {
             'Person 1': false,
             'Person 2': false
         };
+        // Filter-Status
+        this.currentStatusFilter = 'unpaid'; // Standard: nur offene Einträge
+        this.currentTimeFilter = 'all';
+        // Pagination
+        this.itemsPerPage = 20;
+        this.currentPage = 1;
         this.init();
     }
 
@@ -78,6 +85,15 @@ class HouseholdTracker {
 
         // Settings toggle event
         document.getElementById('settings-header').addEventListener('click', () => this.toggleSettings());
+
+        // Filter events
+        document.getElementById('filter-unpaid').addEventListener('click', () => this.setStatusFilter('unpaid'));
+        document.getElementById('filter-paid').addEventListener('click', () => this.setStatusFilter('paid'));
+        document.getElementById('filter-all').addEventListener('click', () => this.setStatusFilter('all'));
+        document.getElementById('month-filter').addEventListener('change', (e) => this.setTimeFilter(e.target.value));
+
+        // Load more event
+        document.getElementById('load-more-btn').addEventListener('click', () => this.loadMoreEntries());
 
         // Enter key for auth
         document.getElementById('email').addEventListener('keypress', (e) => {
@@ -135,6 +151,77 @@ class HouseholdTracker {
                 this.personGroupsCollapsed[person] = true;
             }
         }
+    }
+
+    // Filter-Funktionen
+    setStatusFilter(status) {
+        this.currentStatusFilter = status;
+        this.currentPage = 1;
+        
+        // Update active button
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`filter-${status}`).classList.add('active');
+        
+        this.applyFilters();
+    }
+
+    setTimeFilter(timeRange) {
+        this.currentTimeFilter = timeRange;
+        this.currentPage = 1;
+        this.applyFilters();
+    }
+
+    applyFilters() {
+        let filtered = [...this.expenses];
+
+        // Status Filter
+        if (this.currentStatusFilter === 'paid') {
+            filtered = filtered.filter(e => e.status === 'paid');
+        } else if (this.currentStatusFilter === 'unpaid') {
+            filtered = filtered.filter(e => e.status === 'unpaid');
+        }
+        // 'all' zeigt alle Einträge
+
+        // Time Filter
+        if (this.currentTimeFilter !== 'all') {
+            const now = new Date();
+            let startDate;
+
+            switch (this.currentTimeFilter) {
+                case 'current':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    break;
+                case 'last3':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+                    break;
+                case 'year':
+                    startDate = new Date(now.getFullYear(), 0, 1);
+                    break;
+            }
+
+            if (startDate) {
+                filtered = filtered.filter(e => new Date(e.date) >= startDate);
+            }
+        }
+
+        this.filteredExpenses = filtered;
+        this.updateFilterCounts();
+        this.renderExpenses();
+    }
+
+    updateFilterCounts() {
+        const unpaidCount = this.expenses.filter(e => e.status === 'unpaid').length;
+        const paidCount = this.expenses.filter(e => e.status === 'paid').length;
+        const totalCount = this.expenses.length;
+
+        document.getElementById('unpaid-count').textContent = unpaidCount;
+        document.getElementById('paid-count').textContent = paidCount;
+        document.getElementById('total-count').textContent = totalCount;
+    }
+
+    loadMoreEntries() {
+        this.currentPage++;
+        this.renderExpenses();
     }
 
     showLoading() {
@@ -315,7 +402,7 @@ class HouseholdTracker {
             // Sortierung im JavaScript statt in Firestore
             this.expenses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
             
-            this.renderExpenses();
+            this.applyFilters();
             this.updateSummary();
         });
     }
@@ -384,13 +471,19 @@ class HouseholdTracker {
     renderExpenses() {
         const container = document.getElementById('entries-container');
         
-        if (this.expenses.length === 0) {
-            container.innerHTML = '<div class="no-entries">Noch keine Ausgaben erfasst.</div>';
+        if (this.filteredExpenses.length === 0) {
+            container.innerHTML = '<div class="no-entries">Keine Ausgaben für die gewählten Filter gefunden.</div>';
+            this.updateLoadMoreSection();
             return;
         }
 
+        // Pagination
+        const startIndex = 0;
+        const endIndex = this.currentPage * this.itemsPerPage;
+        const expensesToShow = this.filteredExpenses.slice(startIndex, endIndex);
+
         // Gruppiere nach Personen
-        const groupedExpenses = this.expenses.reduce((groups, expense) => {
+        const groupedExpenses = expensesToShow.reduce((groups, expense) => {
             if (!groups[expense.person]) {
                 groups[expense.person] = [];
             }
@@ -434,7 +527,8 @@ class HouseholdTracker {
                 const statusClass = expense.status === 'paid' ? 'status-paid' : 'status-unpaid';
                 const statusText = expense.status === 'paid' ? 'Bezahlt' : 'Offen';
                 const actionBtnClass = expense.status === 'paid' ? 'paid' : '';
-                const actionBtnText = expense.status === 'paid' ? 'Wieder öffnen' : 'Als bezahlt markieren';
+                const actionIcon = expense.status === 'paid' ? '🔄' : '✅';
+                const actionTooltip = expense.status === 'paid' ? 'Wieder öffnen' : 'Als bezahlt markieren';
 
                 html += `
                     <tr>
@@ -448,10 +542,12 @@ class HouseholdTracker {
                         <td>
                             <div class="actions-container">
                                 <button class="action-btn ${actionBtnClass}" onclick="tracker.togglePaymentStatus('${expense.id}')">
-                                    ${actionBtnText}
+                                    ${actionIcon}
+                                    <div class="tooltip">${actionTooltip}</div>
                                 </button>
                                 <button class="delete-btn" onclick="tracker.deleteExpense('${expense.id}')">
-                                    Löschen
+                                    🗑️
+                                    <div class="tooltip">Löschen</div>
                                 </button>
                             </div>
                         </td>
@@ -468,9 +564,25 @@ class HouseholdTracker {
         });
 
         container.innerHTML = html;
+        this.updateLoadMoreSection();
         
         // Event Listener für Summary-Cards nach dem Rendern erneut setzen
         this.setupSummaryCardListeners();
+    }
+
+    updateLoadMoreSection() {
+        const loadMoreSection = document.getElementById('load-more-section');
+        const shownCount = Math.min(this.currentPage * this.itemsPerPage, this.filteredExpenses.length);
+        const totalFiltered = this.filteredExpenses.length;
+
+        document.getElementById('shown-count').textContent = shownCount;
+        document.getElementById('total-filtered').textContent = totalFiltered;
+
+        if (shownCount < totalFiltered) {
+            loadMoreSection.style.display = 'block';
+        } else {
+            loadMoreSection.style.display = 'none';
+        }
     }
 
     updateSummary() {
