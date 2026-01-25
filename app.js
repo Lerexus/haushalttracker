@@ -71,6 +71,9 @@ class HouseholdTracker {
         document.getElementById('person1-name').addEventListener('blur', () => this.updatePersonName('Person 1'));
         document.getElementById('person2-name').addEventListener('blur', () => this.updatePersonName('Person 2'));
 
+        // Settings toggle event
+        document.getElementById('settings-header').addEventListener('click', () => this.toggleSettings());
+
         // Enter key for auth
         document.getElementById('email').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.login();
@@ -457,19 +460,19 @@ class HouseholdTracker {
     }
 }
 
-// Settings Toggle Funktion
-function toggleSettings() {
-    const content = document.getElementById('settings-content');
-    const toggle = document.getElementById('settings-toggle');
-    
-    if (content.classList.contains('expanded')) {
-        content.classList.remove('expanded');
-        toggle.classList.remove('expanded');
-    } else {
-        content.classList.add('expanded');
-        toggle.classList.add('expanded');
+// Settings Toggle Funktion (als Klassenmethode)
+    toggleSettings() {
+        const content = document.getElementById('settings-content');
+        const toggle = document.getElementById('settings-toggle');
+        
+        if (content.classList.contains('expanded')) {
+            content.classList.remove('expanded');
+            toggle.classList.remove('expanded');
+        } else {
+            content.classList.add('expanded');
+            toggle.classList.add('expanded');
+        }
     }
-}
 
 // App initialisieren
 window.tracker = new HouseholdTracker();
