@@ -527,7 +527,8 @@ class HouseholdTracker {
             personExpenses.forEach(expense => {
                 const statusClass = expense.status === 'paid' ? 'status-paid' : 'status-unpaid';
                 const statusText = expense.status === 'paid' ? 'Bezahlt' : 'Offen';
-                const actionBtnClass = expense.status === 'paid' ? 'paid' : '';
+                // GEÄNDERT: Farben umgekehrt - "Als bezahlt markieren" = grün, "Wieder öffnen" = blau
+                const actionBtnClass = expense.status === 'paid' ? 'unpaid' : 'paid';
                 // GEÄNDERT: Einfache Unicode-Symbole statt Emojis für einfarbige Hintergründe
                 const actionIcon = expense.status === 'paid' ? '↻' : '✓';
                 const actionTooltip = expense.status === 'paid' ? 'Wieder öffnen' : 'Als bezahlt markieren';
