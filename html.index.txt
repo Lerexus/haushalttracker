@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShareMate</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>ShareMate</h1>
+        </div>
+
+        <!-- Loading Screen -->
+        <div class="loading" id="loading">
+            <h3>🔄 Lade Anwendung...</h3>
+            <p>Verbindung zur Datenbank wird hergestellt...</p>
+        </div>
+
+        <!-- Authentication Section -->
+        <div class="auth-section" id="auth-section">
+            <h2>🔐 Anmeldung erforderlich</h2>
+            <p style="margin-bottom: 25px; color: #94a3b8; font-size: 1.05rem;">
+                Melde dich an und verwalte eure gemeinsamen Ausgaben einfach, sicher und fair – mit ShareMate.
+            </p>
+            
+            <div class="auth-form">
+                <input type="email" id="email" placeholder="E-Mail Adresse" required>
+                <input type="password" id="password" placeholder="Passwort" required>
+                <div class="auth-buttons">
+                    <button class="btn" id="login-btn">Anmelden</button>
+                    <button class="btn btn-secondary" id="register-btn">Registrieren</button>
+                </div>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 0.9rem; color: #94a3b8;">
+                Beide Partner können sich mit denselben Zugangsdaten anmelden, um die gleichen Daten zu teilen.
+            </p>
+        </div>
+
+        <!-- Main App Content -->
+        <div class="app-content" id="app-content">
+            <div class="user-info" id="user-info">
+                <span id="user-email">Angemeldet als: </span>
+                <button class="logout-btn" id="logout-btn">Abmelden</button>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="settings-section">
+                <div class="settings-header" id="settings-header">
+                    <h2>Einstellungen</h2>
+                    <span class="settings-toggle" id="settings-toggle">▼</span>
+                </div>
+                <div class="settings-content" id="settings-content">
+                    <div class="name-inputs">
+                        <div class="form-group">
+                            <label for="person1-name">Name für Person 1</label>
+                            <input type="text" id="person1-name" placeholder="z.B. Max" maxlength="20">
+                        </div>
+                        <div class="form-group">
+                            <label for="person2-name">Name für Person 2</label>
+                            <input type="text" id="person2-name" placeholder="z.B. Anna" maxlength="20">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="summary">
+                <div class="summary-card">
+                    <h3 id="person1-summary-title">Person 1 - Offen</h3>
+                    <div class="amount" id="person1-total">CHF 0.00</div>
+                </div>
+                <div class="summary-card">
+                    <h3 id="person2-summary-title">Person 2 - Offen</h3>
+                    <div class="amount" id="person2-total">CHF 0.00</div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h2>Neue Ausgabe hinzufügen</h2>
+                <form id="expense-form">
+                    <div class="form-group">
+                        <label for="person">Person</label>
+                        <select id="person" required>
+                            <option value="">Bitte wählen...</option>
+                            <option value="Person 1">Person 1</option>
+                            <option value="Person 2">Person 2</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="category">Kategorie</label>
+                        <select id="category" required>
+                            <option value="">Bitte wählen...</option>
+                            <option value="Einkauf Haushalt">Einkauf Haushalt</option>
+                            <option value="Online Takeout oder Takeaway">Online Takeout oder Takeaway</option>
+                            <option value="Auswärts Essen oder Drinks">Auswärts Essen oder Drinks</option>
+                            <option value="Sonstiges">Sonstiges</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Betrag (CHF)</label>
+                        <input type="number" id="amount" step="0.05" min="0" required placeholder="0.00">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="remarks">Bemerkungen</label>
+                        <textarea id="remarks" placeholder="Optionale Bemerkungen..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Datum</label>
+                        <input type="date" id="date" required>
+                    </div>
+
+                    <button type="submit" class="btn" id="submit-btn">💾 Ausgabe hinzufügen</button>
+                </form>
+            </div>
+
+            <div class="entries-section">
+                <h2>Ausgaben Übersicht</h2>
+                
+                <!-- Filter-Sektion -->
+                <div class="filter-section">
+                    <div class="status-filters">
+                        <button class="filter-btn active" data-status="unpaid" id="filter-unpaid">
+                            Offen (<span id="unpaid-count">0</span>)
+                        </button>
+                        <button class="filter-btn" data-status="paid" id="filter-paid">
+                            Bezahlt (<span id="paid-count">0</span>)
+                        </button>
+                        <button class="filter-btn" data-status="all" id="filter-all">
+                            Alle (<span id="total-count">0</span>)
+                        </button>
+                    </div>
+                    
+                    <div class="time-filters">
+                        <select id="month-filter">
+                            <option value="all">Alle Zeit</option>
+                            <option value="current">Diesen Monat</option>
+                            <option value="last3">Letzte 3 Monate</option>
+                            <option value="year">Dieses Jahr</option>
+                        </select>
+                    </div>
+
+                    <!-- NEU: Sortier-Filter -->
+                    <div class="sort-filters">
+                        <button class="sort-btn active" data-sort="date" id="sort-date">
+                            Nach Datum
+                        </button>
+                        <button class="sort-btn" data-sort="lastModified" id="sort-modified">
+                            Nach Änderung
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="entries-container">
+                    <div class="no-entries">Noch keine Ausgaben erfasst.</div>
+                </div>
+                
+                <!-- Laden-Button für Pagination -->
+                <div class="load-more" id="load-more-section" style="display: none;">
+                    <button id="load-more-btn" class="load-more-btn">Weitere 20 Einträge laden</button>
+                    <div class="load-info">Zeige <span id="shown-count">0</span> von <span id="total-filtered">0</span> Einträgen</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+
+</html>
