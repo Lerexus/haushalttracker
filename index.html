@@ -126,13 +126,13 @@
                 <div class="filter-section">
                     <div class="status-filters">
                         <button class="filter-btn active" data-status="unpaid" id="filter-unpaid">
-                            🔴 Offen (<span id="unpaid-count">0</span>)
+                            Offen (<span id="unpaid-count">0</span>)
                         </button>
                         <button class="filter-btn" data-status="paid" id="filter-paid">
-                            ✅ Bezahlt (<span id="paid-count">0</span>)
+                            Bezahlt (<span id="paid-count">0</span>)
                         </button>
                         <button class="filter-btn" data-status="all" id="filter-all">
-                            📋 Alle (<span id="total-count">0</span>)
+                            Alle (<span id="total-count">0</span>)
                         </button>
                     </div>
                     
@@ -145,10 +145,14 @@
                         </select>
                     </div>
 
-                    <!-- NEU: Sortier-Buttons -->
+                    <!-- NEU: Sortier-Filter -->
                     <div class="sort-filters">
-                        <button class="sort-btn active" id="sort-date">📅 Nach Datum</button>
-                        <button class="sort-btn" id="sort-modified">🕒 Nach Änderung</button>
+                        <button class="sort-btn active" data-sort="date" id="sort-date">
+                            Nach Datum
+                        </button>
+                        <button class="sort-btn" data-sort="lastModified" id="sort-modified">
+                            Nach Änderung
+                        </button>
                     </div>
                 </div>
                 
@@ -158,7 +162,7 @@
                 
                 <!-- Laden-Button für Pagination -->
                 <div class="load-more" id="load-more-section" style="display: none;">
-                    <button id="load-more-btn" class="load-more-btn">📄 Weitere 20 Einträge laden</button>
+                    <button id="load-more-btn" class="load-more-btn">Weitere 20 Einträge laden</button>
                     <div class="load-info">Zeige <span id="shown-count">0</span> von <span id="total-filtered">0</span> Einträgen</div>
                 </div>
             </div>
