@@ -528,7 +528,8 @@ class HouseholdTracker {
                 const statusClass = expense.status === 'paid' ? 'status-paid' : 'status-unpaid';
                 const statusText = expense.status === 'paid' ? 'Bezahlt' : 'Offen';
                 const actionBtnClass = expense.status === 'paid' ? 'paid' : '';
-                const actionIcon = expense.status === 'paid' ? '🔄' : '✅';
+                // GEÄNDERT: Einfache Unicode-Symbole statt Emojis für einfarbige Hintergründe
+                const actionIcon = expense.status === 'paid' ? '↻' : '✓';
                 const actionTooltip = expense.status === 'paid' ? 'Wieder öffnen' : 'Als bezahlt markieren';
 
                 html += `
@@ -547,7 +548,7 @@ class HouseholdTracker {
                                     <div class="tooltip">${actionTooltip}</div>
                                 </button>
                                 <button class="delete-btn" onclick="tracker.deleteExpense('${expense.id}')">
-                                    🗑️
+                                    ×
                                     <div class="tooltip">Löschen</div>
                                 </button>
                             </div>
