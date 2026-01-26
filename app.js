@@ -88,9 +88,6 @@ class HouseholdTracker {
         // Settings toggle event
         document.getElementById('settings-header').addEventListener('click', () => this.toggleSettings());
 
-        // Form toggle event
-        document.getElementById('form-header').addEventListener('click', () => this.toggleForm());
-
         // Filter events
         document.getElementById('filter-unpaid').addEventListener('click', () => this.setStatusFilter('unpaid'));
         document.getElementById('filter-paid').addEventListener('click', () => this.setStatusFilter('paid'));
@@ -733,19 +730,6 @@ class HouseholdTracker {
     toggleSettings() {
         const content = document.getElementById('settings-content');
         const toggle = document.getElementById('settings-toggle');
-        
-        if (content.classList.contains('expanded')) {
-            content.classList.remove('expanded');
-            toggle.classList.remove('expanded');
-        } else {
-            content.classList.add('expanded');
-            toggle.classList.add('expanded');
-        }
-    }
-
-    toggleForm() {
-        const content = document.getElementById('form-content');
-        const toggle = document.getElementById('form-toggle');
         
         if (content.classList.contains('expanded')) {
             content.classList.remove('expanded');
