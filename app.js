@@ -88,6 +88,9 @@ class HouseholdTracker {
         // Settings toggle event
         document.getElementById('settings-header').addEventListener('click', () => this.toggleSettings());
 
+        // Form toggle event
+        document.getElementById('form-header').addEventListener('click', () => this.toggleForm());
+
         // Filter events
         document.getElementById('filter-unpaid').addEventListener('click', () => this.setStatusFilter('unpaid'));
         document.getElementById('filter-paid').addEventListener('click', () => this.setStatusFilter('paid'));
@@ -398,8 +401,8 @@ class HouseholdTracker {
         document.getElementById('person2-name').value = this.personNames['Person 2'];
 
         // Update summary titles
-        document.getElementById('person1-summary-title').textContent = `${this.personNames['Person 1']} - Offen`;
-        document.getElementById('person2-summary-title').textContent = `${this.personNames['Person 2']} - Offen`;
+        document.getElementById('person1-summary-title').textContent = `${this.personNames['Person 1']} - Offene Ausgaben`;
+        document.getElementById('person2-summary-title').textContent = `${this.personNames['Person 2']} - Offene Ausgaben`;
 
         // Update select options
         const personSelect = document.getElementById('person');
@@ -567,7 +570,7 @@ class HouseholdTracker {
                 <div class="person-group" id="${personGroupId}">
                     <div class="person-header ${isCollapsed ? 'collapsed' : ''}" onclick="tracker.togglePersonGroup('${person}')">
                         <div class="person-name">${displayName}</div>
-                        <div class="person-total">Offen: CHF ${personTotal.toFixed(2)}</div>
+                        <div class="person-total">Details Ausgaben</div>
                     </div>
                     <div class="person-content ${isCollapsed ? 'collapsed' : ''}">
                         <div class="table-container">
@@ -730,6 +733,19 @@ class HouseholdTracker {
     toggleSettings() {
         const content = document.getElementById('settings-content');
         const toggle = document.getElementById('settings-toggle');
+        
+        if (content.classList.contains('expanded')) {
+            content.classList.remove('expanded');
+            toggle.classList.remove('expanded');
+        } else {
+            content.classList.add('expanded');
+            toggle.classList.add('expanded');
+        }
+    }
+
+    toggleForm() {
+        const content = document.getElementById('form-content');
+        const toggle = document.getElementById('form-toggle');
         
         if (content.classList.contains('expanded')) {
             content.classList.remove('expanded');

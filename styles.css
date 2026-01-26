@@ -285,20 +285,59 @@ body {
     color: #3b82f6;
 }
 
-/* Form Section - AUFGEHELLT */
+/* Form Section - AUFGEHELLT mit kollapsiblem Header */
 .form-section {
     background: rgba(30, 41, 59, 0.9);
     backdrop-filter: blur(15px);
-    padding: 30px;
     border-radius: 15px;
     border: 1px solid rgba(148, 163, 184, 0.2);
     margin-bottom: 30px;
+    overflow: hidden;
 }
 
-.form-section h2 {
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    background: rgba(100, 116, 139, 0.3);
+}
+
+.form-header:hover {
+    background: rgba(100, 116, 139, 0.4);
+}
+
+.form-header h2 {
     font-size: 1.5rem;
-    margin-bottom: 25px;
+    margin: 0;
     color: #3b82f6;
+}
+
+.form-toggle {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    transition: transform 0.3s ease;
+}
+
+.form-toggle.expanded {
+    transform: rotate(180deg);
+}
+
+.form-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.form-content.expanded {
+    max-height: 600px;
+}
+
+.form-content form {
+    padding: 30px;
 }
 
 .form-group {
