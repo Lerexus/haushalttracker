@@ -38,6 +38,8 @@ class HouseholdTracker {
         // Filter-Status
         this.currentStatusFilter = 'unpaid'; // Standard: nur offene Einträge
         this.currentTimeFilter = 'all';
+        // NEU: Sortier-Status
+        this.currentSortBy = 'date'; // Standard: nach Datum sortieren
         // Pagination
         this.itemsPerPage = 20;
         this.currentPage = 1;
@@ -92,6 +94,10 @@ class HouseholdTracker {
         document.getElementById('filter-all').addEventListener('click', () => this.setStatusFilter('all'));
         document.getElementById('month-filter').addEventListener('change', (e) => this.setTimeFilter(e.target.value));
 
+        // NEU: Sortier-Events
+        document.getElementById('sort-date').addEventListener('click', () => this.setSortBy('date'));
+        document.getElementById('sort-modified').addEventListener('click', () => this.setSortBy('lastModified'));
+
         // Load more event
         document.getElementById('load-more-btn').addEventListener('click', () => this.loadMoreEntries());
 
@@ -102,6 +108,18 @@ class HouseholdTracker {
         document.getElementById('password').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.login();
         });
+    }
+
+    // NEU: Sortier-Funktionen
+    setSortBy(sortBy) {
+        this.currentSortBy = sortBy;
+        this.currentPage = 1;
+        
+        // Update active button
+        document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`sort-${sortBy === 'lastModified' ? 'modified' : 'date'}`).classList.add('active');
+        
+        this.applyFilters();
     }
 
     // Feature 1: Scroll-Navigation zu Personen-Gruppen
@@ -203,6 +221,19 @@ class HouseholdTracker {
                 filtered = filtered.filter(e => new Date(e.date) >= startDate);
             }
         }
+
+        // NEU: Sortierung anwenden
+        filtered.sort((a, b) => {
+            if (this.currentSortBy === 'lastModified') {
+                // Nach letzter Änderung sortieren (neueste zuerst)
+                const dateA = a.lastModified ? new Date(a.lastModified.seconds * 1000) : new Date(a.timestamp.seconds * 1000);
+                const dateB = b.lastModified ? new Date(b.lastModified.seconds * 1000) : new Date(b.timestamp.seconds * 1000);
+                return dateB - dateA;
+            } else {
+                // Nach Datum sortieren (neueste zuerst)
+                return new Date(b.date) - new Date(a.date);
+            }
+        });
 
         this.filteredExpenses = filtered;
         this.updateFilterCounts();
@@ -399,8 +430,8 @@ class HouseholdTracker {
                 });
             });
             
-            // Sortierung im JavaScript statt in Firestore
-            this.expenses.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            // Standard-Sortierung nach Datum (neueste zuerst)
+            this.expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
             
             this.applyFilters();
             this.updateSummary();
@@ -410,6 +441,7 @@ class HouseholdTracker {
     async addExpense() {
         if (!this.currentUser) return;
 
+        const now = new Date();
         const expense = {
             person: document.getElementById('person').value,
             category: document.getElementById('category').value,
@@ -417,7 +449,8 @@ class HouseholdTracker {
             remarks: document.getElementById('remarks').value,
             date: document.getElementById('date').value,
             status: 'unpaid',
-            timestamp: new Date(),
+            timestamp: now,
+            lastModified: now, // NEU: Zeitstempel für letzte Änderung
             userId: this.currentUser.uid
         };
 
@@ -444,8 +477,10 @@ class HouseholdTracker {
 
         try {
             const newStatus = expense.status === 'paid' ? 'unpaid' : 'paid';
+            // NEU: lastModified bei Status-Änderung aktualisieren
             await updateDoc(doc(db, 'expenses', id), {
-                status: newStatus
+                status: newStatus,
+                lastModified: new Date()
             });
             
             const statusText = newStatus === 'paid' ? 'als bezahlt markiert' : 'wieder geöffnet';
@@ -466,6 +501,28 @@ class HouseholdTracker {
             console.error('Error deleting expense:', error);
             this.showNotification('Fehler beim Löschen der Ausgabe', 'error');
         }
+    }
+
+    // NEU: Hilfsfunktion für Zeitstempel-Formatierung
+    formatTimestamp(timestamp) {
+        if (!timestamp) return '-';
+        
+        let date;
+        if (timestamp.seconds) {
+            // Firestore Timestamp
+            date = new Date(timestamp.seconds * 1000);
+        } else {
+            // JavaScript Date
+            date = new Date(timestamp);
+        }
+        
+        return date.toLocaleString('de-CH', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     }
 
     renderExpenses() {
@@ -493,7 +550,10 @@ class HouseholdTracker {
 
         let html = '';
         
-        Object.keys(groupedExpenses).forEach(person => {
+        // KORREKTUR 1: Konstante Reihenfolge - Person 1 zuerst, dann Person 2
+        const orderedPersons = ['Person 1', 'Person 2'].filter(person => groupedExpenses[person]);
+        
+        orderedPersons.forEach(person => {
             const personExpenses = groupedExpenses[person];
             const personTotal = personExpenses
                 .filter(e => e.status === 'unpaid')
@@ -518,18 +578,30 @@ class HouseholdTracker {
                                         <th>Kategorie</th>
                                         <th>Betrag</th>
                                         <th>Status</th>
+                                        <th>Letzte Änderung</th>
                                         <th>Aktionen</th>
                                     </tr>
                                 </thead>
                                 <tbody>
             `;
 
-            personExpenses.forEach(expense => {
+            // KORREKTUR 2: Sortierung innerhalb der Person nach gewähltem Kriterium
+            const sortedPersonExpenses = [...personExpenses].sort((a, b) => {
+                if (this.currentSortBy === 'lastModified') {
+                    const dateA = a.lastModified ? (a.lastModified.seconds ? new Date(a.lastModified.seconds * 1000) : new Date(a.lastModified)) : new Date(a.timestamp.seconds * 1000);
+                    const dateB = b.lastModified ? (b.lastModified.seconds ? new Date(b.lastModified.seconds * 1000) : new Date(b.lastModified)) : new Date(b.timestamp.seconds * 1000);
+                    return dateB - dateA;
+                } else {
+                    return new Date(b.date) - new Date(a.date);
+                }
+            });
+
+            sortedPersonExpenses.forEach(expense => {
                 const statusClass = expense.status === 'paid' ? 'status-paid' : 'status-unpaid';
                 const statusText = expense.status === 'paid' ? 'Bezahlt' : 'Offen';
-                // GEÄNDERT: Farben umgekehrt - "Als bezahlt markieren" = grün, "Wieder öffnen" = blau
+                // Farben umgekehrt - "Als bezahlt markieren" = grün, "Wieder öffnen" = blau
                 const actionBtnClass = expense.status === 'paid' ? 'unpaid' : 'paid';
-                // GEÄNDERT: Einfache Unicode-Symbole statt Emojis für einfarbige Hintergründe
+                // Einfache Unicode-Symbole statt Emojis für einfarbige Hintergründe
                 const actionIcon = expense.status === 'paid' ? '↻' : '✓';
                 const actionTooltip = expense.status === 'paid' ? 'Wieder öffnen' : 'Als bezahlt markieren';
 
@@ -542,6 +614,7 @@ class HouseholdTracker {
                         </td>
                         <td>CHF ${expense.amount.toFixed(2)}</td>
                         <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>${this.formatTimestamp(expense.lastModified || expense.timestamp)}</td>
                         <td>
                             <div class="actions-container">
                                 <button class="action-btn ${actionBtnClass}" onclick="tracker.togglePaymentStatus('${expense.id}')">
